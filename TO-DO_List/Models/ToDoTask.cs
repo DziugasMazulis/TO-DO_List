@@ -8,10 +8,11 @@ namespace TO_DO_List.Models
 {
     public class ToDoTask
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int ToDoTaskID { get; set; }
+        //guid?
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ID { get; set; }
         public string Title { get; set; }
-        public string Text { get; set; }
+        public bool IsCompleted { get; set; }
         public virtual User User { get; set; }
     }
 }

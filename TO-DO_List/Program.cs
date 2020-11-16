@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TO_DO_List.Contracts.Services;
 using TO_DO_List.Data;
 using TO_DO_List.Models;
+using TO_DO_List.Services;
 
 namespace TO_DO_List
 {
@@ -17,7 +20,7 @@ namespace TO_DO_List
         public static void Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
-            
+
             SeedDatabase(host);
 
             host.Run();
@@ -27,16 +30,19 @@ namespace TO_DO_List
         {
             using (var scope = host.Services.CreateScope())
             {
-                var services = scope.ServiceProvider;
+                var serviceProvider = scope.ServiceProvider;
                 try
                 {
-                    var context = services.GetRequiredService<ApplicationContext>();
-                    DatabaseManager.InitialiseDatabase(context);
+                    var databaseService = serviceProvider.GetRequiredService<IDatabaseService>();
+                    databaseService.EnsureDeleted();
+                    databaseService.EnsureCreated();
+                    databaseService.SeedRoles();
+                    databaseService.SeedUsers();
+                    databaseService.SeedTasks();
                 }
                 catch (Exception ex)
                 {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred creating the DB.");
+                    Debug.WriteLine(ex.Message);
                 }
             }
         }
