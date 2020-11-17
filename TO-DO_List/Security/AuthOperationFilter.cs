@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using TO_DO_List.Data;
 
 namespace TO_DO_List.Security
 {
@@ -18,12 +17,12 @@ namespace TO_DO_List.Security
 
             if (!isAuthorized) return;
 
-            operation.Responses.TryAdd("401", new OpenApiResponse { Description = "Unauthorized" });
-            operation.Responses.TryAdd("403", new OpenApiResponse { Description = "Forbidden" });
+            operation.Responses.TryAdd(Constants.Int401, new OpenApiResponse { Description = Constants.Unauthorized });
+            operation.Responses.TryAdd(Constants.Int403, new OpenApiResponse { Description = Constants.Forbidden });
 
             var jwtbearerScheme = new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "bearer" }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = Constants.Bearer }
             };
 
             operation.Security = new List<OpenApiSecurityRequirement>

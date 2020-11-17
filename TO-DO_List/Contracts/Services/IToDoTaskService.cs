@@ -8,10 +8,10 @@ namespace TO_DO_List.Contracts.Services
 {
     public interface IToDoTaskService
     {
-        public Task<IEnumerable<ToDoTaskViewModel>> GetToDoTasks();
-        public Task<IEnumerable<ToDoTaskViewModel>> GetToDoTasksByUser(ClaimsPrincipal user);
-        public Task<ToDoTaskViewModel> AddToDoTask(ClaimsPrincipal user, ToDoTaskDto toDoTaskDto);
-        public Task<ToDoTaskViewModel> UpdateToDoTask(ClaimsPrincipal user, int id, ToDoTaskDto toDoTask);
-        public Task<ToDoTaskViewModel> DeleteToDoTask(ClaimsPrincipal user, int id);
+        Task<IEnumerable<ToDoTaskResponse>> GetToDoTasks();
+        Task<IEnumerable<ToDoTaskResponse>> GetToDoTasksByUser(ClaimsPrincipal user);
+        Task<ToDoTaskResponse> AddToDoTask(ClaimsPrincipal user, ToDoTaskRequest toDoTaskDto);
+        Task<ToDoTaskResponse> UpdateToDoTask(ClaimsPrincipal user, int id, ToDoTaskRequest toDoTask);
+        Task<ToDoTaskResponse> DeleteToDoTask(ClaimsPrincipal user, int id);
     }
 }

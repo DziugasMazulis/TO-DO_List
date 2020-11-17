@@ -2,7 +2,7 @@
 
 namespace TO_DO_List.Models.Dto
 {
-    public class ToDoTaskDto
+    public class ToDoTaskRequest
     {
         [Required]
         public string Title { get; set; }

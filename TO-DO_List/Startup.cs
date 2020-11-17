@@ -1,4 +1,4 @@
-using AutoMapper;
+using EmailService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using TO_DO_List.Contracts.Repositories;
 using TO_DO_List.Contracts.Services;
 using TO_DO_List.Data;
@@ -28,13 +29,16 @@ namespace TO_DO_List
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var emailConfig = Configuration
+                .GetSection(Constants.EmailConfiguration)
+                .Get<EmailConfiguration>();
+
             services.AddDbContextPool<ApplicationContext>(
                 options => options.UseMySql(Configuration.GetConnectionString(Constants.DefaultConnection)));
 
             services.AddIdentity<User, IdentityRole>(options =>
             {
-                //change back to 12 AND get from cfg
-                options.Password.RequiredLength = 5;
+                options.Password.RequiredLength = 12;
                 options.Password.RequireDigit = false;
                 options.Password.RequiredUniqueChars = 1;
                 options.Password.RequireLowercase = false;
@@ -45,6 +49,9 @@ namespace TO_DO_List
             .AddDefaultTokenProviders()
             .AddRoles<IdentityRole>()
             .AddRoleManager<RoleManager<IdentityRole>>();
+
+            services.Configure<DataProtectionTokenProviderOptions>(opt =>
+                opt.TokenLifespan = TimeSpan.FromHours(1));
 
             services.Configure<JwtSettings>(Configuration.GetSection(Constants.Jwt));
             var jwtSettings = Configuration.GetSection(Constants.Jwt).Get<JwtSettings>();
@@ -60,6 +67,9 @@ namespace TO_DO_List
             services.AddScoped<IDatabaseService, DatabaseService>();
             services.AddScoped<IToDoTaskRepository, ToDoTaskRepository>();
             services.AddScoped<IToDoTaskService, ToDoTaskService>();
+            services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<IEmailSender, EmailSender>();
+            services.AddSingleton(emailConfig);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

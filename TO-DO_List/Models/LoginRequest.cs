@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TO_DO_List.Models
 {
-    public class LoginDto
+    public class LoginRequest
     {
         [Required]
         [DataType(DataType.EmailAddress)]

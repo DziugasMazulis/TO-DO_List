@@ -23,13 +23,13 @@ namespace TO_DO_List.Services
             _toDoTaskRepository = toDoTaskRepository;
         }
 
-        public async Task<IEnumerable<ToDoTaskViewModel>> GetToDoTasks()
+        public async Task<IEnumerable<ToDoTaskResponse>> GetToDoTasks()
         {
             var result = await _toDoTaskRepository.GetToDoTasks();
 
             if (result != null)
             {
-                var toDoTasksViewModel = new List<ToDoTaskViewModel>();
+                var toDoTasksViewModel = new List<ToDoTaskResponse>();
 
                 foreach (var task in result)
                 {
@@ -49,7 +49,7 @@ namespace TO_DO_List.Services
             return null;
         }
 
-        public async Task<IEnumerable<ToDoTaskViewModel>> GetToDoTasksByUser(ClaimsPrincipal user)
+        public async Task<IEnumerable<ToDoTaskResponse>> GetToDoTasksByUser(ClaimsPrincipal user)
         {
             var currUser = await _userManager.GetUserAsync(user);
 
@@ -59,7 +59,7 @@ namespace TO_DO_List.Services
 
                 if (toDoTasks != null)
                 {
-                    var toDoTasksViewModel = new List<ToDoTaskViewModel>();
+                    var toDoTasksViewModel = new List<ToDoTaskResponse>();
 
                     foreach (var task in toDoTasks)
                     {
@@ -73,7 +73,7 @@ namespace TO_DO_List.Services
 
             return null;
         }
-        public async Task<ToDoTaskViewModel> AddToDoTask(ClaimsPrincipal user, ToDoTaskDto toDoTaskDto)
+        public async Task<ToDoTaskResponse> AddToDoTask(ClaimsPrincipal user, ToDoTaskRequest toDoTaskDto)
         {
             var currUser = await _userManager.GetUserAsync(user);
 
@@ -99,7 +99,7 @@ namespace TO_DO_List.Services
             return null;
         }
 
-        public async Task<ToDoTaskViewModel> UpdateToDoTask(ClaimsPrincipal user, int id, ToDoTaskDto toDoTask)
+        public async Task<ToDoTaskResponse> UpdateToDoTask(ClaimsPrincipal user, int id, ToDoTaskRequest toDoTask)
         {
             var result = await _toDoTaskRepository.GetToDoTask(id);
 
@@ -127,7 +127,7 @@ namespace TO_DO_List.Services
 
             return null;
         }
-        public async Task<ToDoTaskViewModel> DeleteToDoTask(ClaimsPrincipal user, int id)
+        public async Task<ToDoTaskResponse> DeleteToDoTask(ClaimsPrincipal user, int id)
         {
             var toDoTask = await _toDoTaskRepository.GetToDoTask(id);
 
@@ -174,9 +174,9 @@ namespace TO_DO_List.Services
         }
 
         //when automapper quits on you
-        private static ToDoTaskViewModel MapModelToViewModel(ToDoTask toDoTask, string userName)
+        private static ToDoTaskResponse MapModelToViewModel(ToDoTask toDoTask, string userName)
         {
-            var toDoTaskViewModel = new ToDoTaskViewModel();
+            var toDoTaskViewModel = new ToDoTaskResponse();
 
             toDoTaskViewModel.ID = toDoTask.ID;
             toDoTaskViewModel.IsCompleted = toDoTask.IsCompleted;

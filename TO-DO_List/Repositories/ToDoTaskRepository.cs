@@ -10,7 +10,7 @@ namespace TO_DO_List.Repositories
 {
     public class ToDoTaskRepository : IToDoTaskRepository
     {
-        private ApplicationContext _applicationContext;
+        private readonly ApplicationContext _applicationContext;
 
         public ToDoTaskRepository(ApplicationContext applicationContext)
         {

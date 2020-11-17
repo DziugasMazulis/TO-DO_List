@@ -28,68 +28,71 @@ namespace TO_DO_List.Services
         }
 
         /// <summary>
-        /// 
+        /// Seed roles located in program configuration.
         /// </summary>
         public void SeedRoles()
         {
-            foreach(UserDto userDto in _seedDataSettings.Users)
+            foreach(UserSettings userDto in _seedDataSettings.Users)
             {
-                //exceptions handling
-                if (!_roleManager.RoleExistsAsync(userDto.Role).Result)
+                var result = _roleManager.RoleExistsAsync(userDto.Role).Result;
+
+                if (!result)
                 {
-                    IdentityRole role = new IdentityRole
-                    {
-                        Name = userDto.Role
-                    };
-                    IdentityResult roleResult = _roleManager.
-                    CreateAsync(role).Result;
-                    //check role result
+                    var role = new IdentityRole();
+                    role.Name = userDto.Role;
+
+                    var roleResult = _roleManager.
+                        CreateAsync(role).Result;
+
+                    if (!roleResult.Succeeded)
+                        throw new System.InvalidOperationException();
                 }
             }
         }
 
         /// <summary>
-        /// 
+        /// Seed users located in program configuration.
         /// </summary>
         public void SeedUsers()
         {
-            foreach(UserDto userDto in _seedDataSettings.Users)
+            foreach(UserSettings userDto in _seedDataSettings.Users)
             {
-                //exceptions handling
-                if (_userManager.FindByEmailAsync(userDto.Username).Result == null)
+                var user = _userManager.FindByEmailAsync(userDto.Username).Result;
+                if (user == null)
                 {
-                    User user = new User
-                    {
-                        UserName = userDto.Username,
-                        Email = userDto.Username
-                    };
+                    user = new User();
+                    user.UserName = userDto.Username;
+                    user.Email = userDto.Username;
 
-                    IdentityResult result = _userManager.CreateAsync(user, userDto.Password).Result;
+                    var identityUser = _userManager.CreateAsync(user, userDto.Password).Result;
 
-                    if (result.Succeeded)
+                    if (identityUser.Succeeded)
                     {
                         _userManager.AddToRoleAsync(user, userDto.Role).Wait();
                         _userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, userDto.Role)).Wait();
                     }
+                    else
+                        throw new System.InvalidOperationException();
                 }
             }
         }
 
         /// <summary>
-        /// 
+        /// Seed tasks located in program configuration.
         /// </summary>
         public void SeedTasks()
         {
 
-            foreach (ToDoTaskSettingsDto toDoTaskDto in _seedDataSettings.ToDoTasks)
+            foreach (ToDoTaskSettings toDoTaskDto in _seedDataSettings.ToDoTasks)
             {
-                //exceptions handling
                 var user = _userManager.FindByEmailAsync(toDoTaskDto.User).Result;
                
                 if (user != null)
                 {
                     var userRoles = _userManager.GetRolesAsync(user);
-                    if(!userRoles.Result.Contains(Constants.Admin))
+
+                    if(userRoles != null &&
+                        !userRoles.Result.Contains(Constants.Admin))
                     {
                         ToDoTask toDoTask = new ToDoTask
                         {

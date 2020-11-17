@@ -1,6 +1,6 @@
 ﻿namespace TO_DO_List.ViewModels
 {
-    public class ToDoTaskViewModel
+    public class ToDoTaskResponse
     {
         public int ID { get; set; }
         public string Title { get; set; }
