@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TO_DO_List.Models;
 
 namespace TO_DO_List.Data
@@ -20,10 +16,11 @@ namespace TO_DO_List.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<User>()
-                .HasMany(u => u.Tasks)
+                .HasMany(u => u.ToDoTasks)
                 .WithOne(t => t.User)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
+                .HasForeignKey(u => u.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
         }
     }
 }

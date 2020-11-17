@@ -10,6 +10,6 @@ namespace TO_DO_List.Settings
     public class SeedDataSettings
     {
         public List<UserDto> Users { get; set; }
-        public List<ToDoTaskDto> ToDoTasks { get; set; }
+        public List<ToDoTaskSettingsDto> ToDoTasks { get; set; }
     }
 }

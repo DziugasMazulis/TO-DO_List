@@ -1,13 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using TO_DO_List.Contracts.Services;
 using TO_DO_List.Data;
 using TO_DO_List.Models;
@@ -18,22 +11,19 @@ namespace TO_DO_List.Services
 {
     public class DatabaseService : IDatabaseService
     {
-        private readonly ILogger<DatabaseService> _logger;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<User> _userManager;
-        private readonly IOptions<SeedDataSettings> _seedDataSettings;
+        private readonly SeedDataSettings _seedDataSettings;
         private readonly ApplicationContext _applicationContext;
 
-        public DatabaseService(ILogger<DatabaseService> logger,
-            RoleManager<IdentityRole> roleManager,
+        public DatabaseService(RoleManager<IdentityRole> roleManager,
             UserManager<User> userManager,
             IOptions<SeedDataSettings> seedDataSettings,
             ApplicationContext applicationContext)
         {
-            _logger = logger;
             _roleManager = roleManager;
             _userManager = userManager;
-            _seedDataSettings = seedDataSettings;
+            _seedDataSettings = seedDataSettings.Value;
             _applicationContext = applicationContext;
         }
 
@@ -42,11 +32,9 @@ namespace TO_DO_List.Services
         /// </summary>
         public void SeedRoles()
         {
-            var seedData = _seedDataSettings.Value;
-
-            foreach(UserDto userDto in seedData.Users)
+            foreach(UserDto userDto in _seedDataSettings.Users)
             {
-                //exceptions handling and logging
+                //exceptions handling
                 if (!_roleManager.RoleExistsAsync(userDto.Role).Result)
                 {
                     IdentityRole role = new IdentityRole
@@ -65,11 +53,9 @@ namespace TO_DO_List.Services
         /// </summary>
         public void SeedUsers()
         {
-            var seedData = _seedDataSettings.Value;
-
-            foreach(UserDto userDto in seedData.Users)
+            foreach(UserDto userDto in _seedDataSettings.Users)
             {
-                //exceptions handling and logging
+                //exceptions handling
                 if (_userManager.FindByEmailAsync(userDto.Username).Result == null)
                 {
                     User user = new User
@@ -94,18 +80,16 @@ namespace TO_DO_List.Services
         /// </summary>
         public void SeedTasks()
         {
-            var seedData = _seedDataSettings.Value;
 
-            foreach (ToDoTaskDto toDoTaskDto in seedData.ToDoTasks)
+            foreach (ToDoTaskSettingsDto toDoTaskDto in _seedDataSettings.ToDoTasks)
             {
-                //exceptions handling and logging
+                //exceptions handling
                 var user = _userManager.FindByEmailAsync(toDoTaskDto.User).Result;
                
                 if (user != null)
                 {
                     var userRoles = _userManager.GetRolesAsync(user);
-                    //contants class
-                    if(!userRoles.Result.Contains("admin"))
+                    if(!userRoles.Result.Contains(Constants.Admin))
                     {
                         ToDoTask toDoTask = new ToDoTask
                         {

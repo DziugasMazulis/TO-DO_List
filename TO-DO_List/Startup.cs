@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -5,10 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TO_DO_List.Contracts.Repositories;
 using TO_DO_List.Contracts.Services;
 using TO_DO_List.Data;
 using TO_DO_List.Extensions;
 using TO_DO_List.Models;
+using TO_DO_List.Repositories;
 using TO_DO_List.Services;
 using TO_DO_List.Settings;
 
@@ -26,7 +29,7 @@ namespace TO_DO_List
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContextPool<ApplicationContext>(
-                options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
+                options => options.UseMySql(Configuration.GetConnectionString(Constants.DefaultConnection)));
 
             services.AddIdentity<User, IdentityRole>(options =>
             {
@@ -43,10 +46,9 @@ namespace TO_DO_List
             .AddRoles<IdentityRole>()
             .AddRoleManager<RoleManager<IdentityRole>>();
 
-            //CONSTANTS CLASS?
-            services.Configure<JwtSettings>(Configuration.GetSection("Jwt"));
-            var jwtSettings = Configuration.GetSection("Jwt").Get<JwtSettings>();
-            services.Configure<SeedDataSettings>(options => Configuration.GetSection("SeedData").Bind(options));
+            services.Configure<JwtSettings>(Configuration.GetSection(Constants.Jwt));
+            var jwtSettings = Configuration.GetSection(Constants.Jwt).Get<JwtSettings>();
+            services.Configure<SeedDataSettings>(options => Configuration.GetSection(Constants.SeedData).Bind(options));
 
             services.AddAuth(jwtSettings);
 
@@ -56,9 +58,10 @@ namespace TO_DO_List
 
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IDatabaseService, DatabaseService>();
+            services.AddScoped<IToDoTaskRepository, ToDoTaskRepository>();
+            services.AddScoped<IToDoTaskService, ToDoTaskService>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

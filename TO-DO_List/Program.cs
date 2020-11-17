@@ -1,17 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using TO_DO_List.Contracts.Services;
-using TO_DO_List.Data;
-using TO_DO_List.Models;
-using TO_DO_List.Services;
 
 namespace TO_DO_List
 {
@@ -33,6 +25,7 @@ namespace TO_DO_List
                 var serviceProvider = scope.ServiceProvider;
                 try
                 {
+                    //not the most efficient way to clear data but hey *shrugEmoji*
                     var databaseService = serviceProvider.GetRequiredService<IDatabaseService>();
                     databaseService.EnsureDeleted();
                     databaseService.EnsureCreated();
