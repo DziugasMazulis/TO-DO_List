@@ -5,6 +5,6 @@ namespace TO_DO_List.Models
 {
     public class User : IdentityUser
     {
-        public IEnumerable<ToDoTask> ToDoTasks { get; set; }
+        public virtual IEnumerable<ToDoTask> ToDoTasks { get; set; }
     }
 }

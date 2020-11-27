@@ -9,7 +9,6 @@ namespace TO_DO_List.Models
         public int ID { get; set; }
         public string Title { get; set; }
         public bool IsCompleted { get; set; }
-        public User User { get; set; }
-        public string UserId { get; set; }
+        public virtual User User { get; set; }
     }
 }

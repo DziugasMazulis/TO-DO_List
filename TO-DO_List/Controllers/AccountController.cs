@@ -48,12 +48,10 @@ namespace TO_DO_List.Controllers
             {
                 var token = await _accountService.Login(loginRequest);
 
-                if (token != null)
-                {
-                    return Ok(token);
-                }
+                if (token == null)
+                    return NotFound();
 
-                return NotFound();
+                return Ok(token);
             }
             catch (Exception)
             {
@@ -82,7 +80,6 @@ namespace TO_DO_List.Controllers
                     return NotFound(string.Format(Constants.UserNotFound, forgotPasswordRequest.Email));
 
                 var callback = Url.Action(nameof(ResetPassword), Constants.Account, new { token = forgotPasswordResponse.Token, email = forgotPasswordResponse.Email }, Request.Scheme);
-
                 var message = new Message(new string[] { forgotPasswordRequest.Email }, Constants.ResetPasswordToken, callback, null);
                 await _emailSender.SendEmailAsync(message);
 

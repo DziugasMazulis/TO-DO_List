@@ -8,8 +8,7 @@ namespace TO_DO_List.Contracts.Services
 {
     public interface IToDoTaskService
     {
-        Task<IEnumerable<ToDoTaskResponse>> GetToDoTasks();
-        Task<IEnumerable<ToDoTaskResponse>> GetToDoTasksByUser(ClaimsPrincipal user);
+        Task<IEnumerable<ToDoTaskResponse>> GetToDoTasks(ClaimsPrincipal user);
         Task<ToDoTaskResponse> AddToDoTask(ClaimsPrincipal user, ToDoTaskRequest toDoTaskDto);
         Task<ToDoTaskResponse> UpdateToDoTask(ClaimsPrincipal user, int id, ToDoTaskRequest toDoTask);
         Task<ToDoTaskResponse> DeleteToDoTask(ClaimsPrincipal user, int id);

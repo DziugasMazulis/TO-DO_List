@@ -6,11 +6,11 @@ namespace TO_DO_List.Contracts.Repositories
 {
     public interface IToDoTaskRepository
     {
-        Task<ToDoTask> AddToDoTask(ToDoTask toDoTask);
-        Task<ToDoTask> DeleteToDoTask(int toDoTaskId);
-        Task<ToDoTask> GetToDoTask(int toDoTaskId);
-        Task<IEnumerable<ToDoTask>> GetToDoTaskByUserId(string id);
-        Task<IEnumerable<ToDoTask>> GetToDoTasks();
-        Task<ToDoTask> UpdateToDoTask(ToDoTask toDoTask);
+        Task<ToDoTask> AddToDoTaskAsync(ToDoTask toDoTask);
+        Task<ToDoTask> DeleteToDoTaskAsync(int toDoTaskId);
+        Task<ToDoTask> GetToDoTaskAsync(int toDoTaskId);
+        Task<List<ToDoTask>> GetToDoTaskByUserIdAsync(string id);
+        Task<List<ToDoTask>> GetToDoTasksAsync();
+        Task<ToDoTask> UpdateToDoTaskAsync(ToDoTask toDoTask);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -15,175 +16,123 @@ namespace TO_DO_List.Services
     {
         private readonly UserManager<User> _userManager;
         private readonly IToDoTaskRepository _toDoTaskRepository;
+        private readonly IMapper _mapper;
 
         public ToDoTaskService(UserManager<User> userManager,
-            IToDoTaskRepository toDoTaskRepository)
+            IToDoTaskRepository toDoTaskRepository,
+            IMapper mapper)
         {
             _userManager = userManager;
             _toDoTaskRepository = toDoTaskRepository;
+            _mapper = mapper;
         }
 
-        public async Task<IEnumerable<ToDoTaskResponse>> GetToDoTasks()
-        {
-            var result = await _toDoTaskRepository.GetToDoTasks();
 
-            if (result != null)
-            {
-                var toDoTasksViewModel = new List<ToDoTaskResponse>();
-
-                foreach (var task in result)
-                {
-                    var toDoTaskUser = await _userManager.FindByIdAsync(task.UserId);
-
-                    if (toDoTaskUser != null)
-                    {
-                        var toDoTaskViewModel = MapModelToViewModel(task, toDoTaskUser.UserName);
-
-                        toDoTasksViewModel.Add(toDoTaskViewModel);
-                    }
-                }
-
-                return toDoTasksViewModel;
-            }
-
-            return null;
-        }
-
-        public async Task<IEnumerable<ToDoTaskResponse>> GetToDoTasksByUser(ClaimsPrincipal user)
+        public async Task<IEnumerable<ToDoTaskResponse>> GetToDoTasks(ClaimsPrincipal user)
         {
             var currUser = await _userManager.GetUserAsync(user);
 
-            if (currUser != null)
+            if (currUser == null)
+                return null;
+
+            var currUserRoles = await _userManager.GetRolesAsync(currUser);
+
+            if (currUserRoles == null)
+                return null;
+
+            List<ToDoTask> result = null;
+
+            if (currUserRoles.Contains(Constants.Admin))
             {
-                var toDoTasks = await _toDoTaskRepository.GetToDoTaskByUserId(currUser.Id);
-
-                if (toDoTasks != null)
-                {
-                    var toDoTasksViewModel = new List<ToDoTaskResponse>();
-
-                    foreach (var task in toDoTasks)
-                    {
-                        var toDoTaskViewModel = MapModelToViewModel(task, task.User.UserName);
-                        toDoTasksViewModel.Add(toDoTaskViewModel);
-                    }
-
-                    return toDoTasksViewModel;
-                }
+                result = await _toDoTaskRepository.GetToDoTasksAsync();
+            }
+            else if (currUserRoles.Contains(Constants.User))
+            {
+                result = await _toDoTaskRepository.GetToDoTaskByUserIdAsync(currUser.Id);
             }
 
-            return null;
+            if (result == null)
+                return null;
+         
+            var toDoTaskResponse = _mapper.Map<List<ToDoTask>, List<ToDoTaskResponse>>(result);
+
+            return toDoTaskResponse;
         }
-        public async Task<ToDoTaskResponse> AddToDoTask(ClaimsPrincipal user, ToDoTaskRequest toDoTaskDto)
+
+        public async Task<ToDoTaskResponse> AddToDoTask(ClaimsPrincipal user, ToDoTaskRequest toDoTaskRequest)
         {
             var currUser = await _userManager.GetUserAsync(user);
 
-            if (currUser != null)
-            {
-                var toDoTask = new ToDoTask
-                {
-                    IsCompleted = toDoTaskDto.IsCompleted,
-                    Title = toDoTaskDto.Title,
-                    User = currUser
-                };
+            if (currUser == null)
+                return null;
 
-                toDoTask = await _toDoTaskRepository.AddToDoTask(toDoTask);
+            var toDoTask = _mapper.Map<ToDoTask>(toDoTaskRequest, opt =>
+                opt.AfterMap((src, dest) => dest.User = currUser));
+            toDoTask = await _toDoTaskRepository.AddToDoTaskAsync(toDoTask);
 
-                if(toDoTask != null)
-                {
-                    var toDoTaskViewModel = MapModelToViewModel(toDoTask, toDoTask.User.UserName);
+            if (toDoTask == null)
+                return null;
 
-                    return toDoTaskViewModel;
-                }
-            }
+            var toDoTaskResponse = _mapper.Map<ToDoTaskResponse>(toDoTask);
 
-            return null;
+            return toDoTaskResponse;
         }
 
-        public async Task<ToDoTaskResponse> UpdateToDoTask(ClaimsPrincipal user, int id, ToDoTaskRequest toDoTask)
+        public async Task<ToDoTaskResponse> UpdateToDoTask(ClaimsPrincipal user, int id, ToDoTaskRequest toDoTaskRequest)
         {
-            var result = await _toDoTaskRepository.GetToDoTask(id);
+            var result = await _toDoTaskRepository.GetToDoTaskAsync(id);
 
-            if (result != null)
-            {
-                var currUser = await _userManager.GetUserAsync(user);
+            if (result == null)
+                return null;
+         
+            var currUser = await _userManager.GetUserAsync(user);
 
-                if (currUser != null &&
-                    result.User != null &&
-                    result.User.UserName == currUser.UserName)
-                {
-                    result.IsCompleted = toDoTask.IsCompleted;
-                    result.Title = toDoTask.Title;
+            if (currUser == null ||
+                result.User == null ||
+                result.User.UserName != currUser.UserName)
+                return null;
 
-                    result = await _toDoTaskRepository.UpdateToDoTask(result);
+            var toDoTask = _mapper.Map<ToDoTask>(toDoTaskRequest, opt =>
+                opt.AfterMap((src, dest) => dest.ID = id));
 
-                    if(result != null)
-                    {
-                        var toDoTaskViewModel = MapModelToViewModel(result, result.User.UserName);
+            result = await _toDoTaskRepository.UpdateToDoTaskAsync(toDoTask);
 
-                        return toDoTaskViewModel;
-                    }
-                }
-            }
+            if (result == null)
+                return null;
+         
+            var toDoTaskResponse = _mapper.Map<ToDoTaskResponse>(result);
 
-            return null;
+            return toDoTaskResponse;
         }
         public async Task<ToDoTaskResponse> DeleteToDoTask(ClaimsPrincipal user, int id)
         {
-            var toDoTask = await _toDoTaskRepository.GetToDoTask(id);
+            var toDoTask = await _toDoTaskRepository.GetToDoTaskAsync(id);
 
-            if (toDoTask != null)
-            {
-                var currUser = await _userManager.GetUserAsync(user);
+            if (toDoTask == null)
+                return null;
 
-                if (currUser != null)
-                {
-                    var currUserRoles = await _userManager.GetRolesAsync(currUser);
-                    
-                    if(currUserRoles != null)
-                    {
-                        string userName;
+            var currUser = await _userManager.GetUserAsync(user);
 
-                        if (currUserRoles.Contains(Constants.Admin))
-                        {
-                            var toDoTaskUser = await _userManager.FindByIdAsync(toDoTask.UserId);
-                            userName = toDoTaskUser.UserName;
-                        }
-                        else if (toDoTask.User != null &&
-                            toDoTask.User.UserName == currUser.UserName)
-                        {
-                            userName = toDoTask.User.UserName;
-                        }
-                        else
-                        {
-                            return null;
-                        }
+            if (currUser == null)
+                return null;
 
-                        toDoTask = await _toDoTaskRepository.DeleteToDoTask(id);
+            var currUserRoles = await _userManager.GetRolesAsync(currUser);
 
-                        if (toDoTask != null)
-                        {
-                            var toDoTaskViewModel = MapModelToViewModel(toDoTask, userName);
+            if (currUserRoles == null)
+                return null;
 
-                            return toDoTaskViewModel;
-                        }
-                    }
-                }
-            }
+            if (!(toDoTask.User.UserName == currUser.UserName && currUserRoles.Contains(Constants.User)) &&
+                !currUserRoles.Contains(Constants.Admin))
+                return null;
 
-            return null;
-        }
+            var toDoTaskResult = await _toDoTaskRepository.DeleteToDoTaskAsync(id);
 
-        //when automapper quits on you
-        private static ToDoTaskResponse MapModelToViewModel(ToDoTask toDoTask, string userName)
-        {
-            var toDoTaskViewModel = new ToDoTaskResponse();
+            if (toDoTaskResult == null)
+                return null;
 
-            toDoTaskViewModel.ID = toDoTask.ID;
-            toDoTaskViewModel.IsCompleted = toDoTask.IsCompleted;
-            toDoTaskViewModel.Title = toDoTask.Title;
-            toDoTaskViewModel.User = userName;
+            var toDoTaskResponse = _mapper.Map<ToDoTaskResponse>(toDoTask);
 
-            return toDoTaskViewModel;
+            return toDoTaskResponse;
         }
     }
 }

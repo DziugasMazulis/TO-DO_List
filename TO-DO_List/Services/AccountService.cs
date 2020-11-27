@@ -24,26 +24,27 @@ namespace TO_DO_List.Services
         {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
-            if (user != null)
-            {
-                var passwordCheck = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
-                if (passwordCheck != null &&
-                    passwordCheck.Succeeded)
-                {
-                    var roles = await _userManager.GetRolesAsync(user);
+            if (user == null)
+                return null;
 
-                    if (roles != null)
-                    {
-                        var token = _jwtService.GenerateJwt(user, roles);
+            var passwordCheck = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
-                        if(token != null &&
-                            token.Length > 0)
-                            return token;
-                    }
-                }
-            }
+            if (passwordCheck == null &&
+                !passwordCheck.Succeeded)
+                return null;
 
-            return null;
+            var roles = await _userManager.GetRolesAsync(user);
+
+            if (roles == null)
+                return null;
+             
+            var token = _jwtService.GenerateJwt(user, roles);
+
+            if (token == null ||
+                token.Length <= 0)
+                return null;
+
+            return token;
         }
 
 
@@ -51,36 +52,30 @@ namespace TO_DO_List.Services
         {
             var user = await _userManager.FindByEmailAsync(forgotPassword.Email);
 
-            if (user != null)
-            {
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            if (user == null)
+                return null;
+             
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            if (token == null)
+                return null;
                 
-                if(token != null)
-                {
-                    var fotgotPasswordRespone = new ForgotPasswordResponse();
+            var fotgotPasswordRespone = new ForgotPasswordResponse();
+            fotgotPasswordRespone.Email = user.Email;
+            fotgotPasswordRespone.Token = token;
 
-                    fotgotPasswordRespone.Email = user.Email;
-                    fotgotPasswordRespone.Token = token;
-
-                    return fotgotPasswordRespone;
-                }
-            }
-
-            return null;
+            return fotgotPasswordRespone;
         }
 
         public async Task<IdentityResult> ResetPassword(string token, string email, ResetPasswordRequest resetPasswordRequest)
         {
             var user = await _userManager.FindByEmailAsync(email);
 
-            if (user != null)
-            {
-                var resetPassResult = await _userManager.ResetPasswordAsync(user, token, resetPasswordRequest.Password);
-
+            if (user == null)
+                return null;
+             
+            var resetPassResult = await _userManager.ResetPasswordAsync(user, token, resetPasswordRequest.Password);
                 return resetPassResult;
-            }
-
-            return null;
         }
     }
 }

@@ -18,7 +18,6 @@ namespace TO_DO_List.Data
             modelBuilder.Entity<User>()
                 .HasMany(u => u.ToDoTasks)
                 .WithOne(t => t.User)
-                .HasForeignKey(u => u.UserId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired();
         }

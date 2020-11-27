@@ -1,3 +1,4 @@
+using AutoMapper;
 using EmailService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -29,12 +30,15 @@ namespace TO_DO_List
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAutoMapper(typeof(Startup));
+
             var emailConfig = Configuration
                 .GetSection(Constants.EmailConfiguration)
                 .Get<EmailConfiguration>();
 
             services.AddDbContextPool<ApplicationContext>(
-                options => options.UseMySql(Configuration.GetConnectionString(Constants.DefaultConnection)));
+                options => options.UseLazyLoadingProxies()
+                .UseMySql(Configuration.GetConnectionString(Constants.DefaultConnection)));
 
             services.AddIdentity<User, IdentityRole>(options =>
             {
